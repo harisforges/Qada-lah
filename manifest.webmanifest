@@ -1,0 +1,13 @@
+{
+  "name": "Qada Lah",
+  "short_name": "Qada Lah",
+  "description": "Kira dan jejak solat qada anda.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f3ea",
+  "theme_color": "#0f5c4a",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
