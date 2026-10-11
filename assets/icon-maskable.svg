@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Full-bleed version of icon.svg for home screens: phones apply their own
+       rounded/circle mask, so the artwork sits inside the central safe zone. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14826a"/>
+      <stop offset="1" stop-color="#0b4a3c"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" fill="url(#g)"/>
+  <g transform="translate(32 32) scale(.92) translate(-32 -32)">
+    <path d="M38 12a20 20 0 1 0 14 34A17 17 0 0 1 38 12z" fill="#f1c45b"/>
+    <path d="M27 33.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
