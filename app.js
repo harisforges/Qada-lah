@@ -2,16 +2,25 @@
 (() => {
   'use strict';
 
+  // Refuse to run inside someone else's frame (clickjacking protection —
+  // GitHub Pages can't send X-Frame-Options, so we do it here).
+  if (window.top !== window.self) {
+    try { window.top.location.replace(window.self.location.href); } catch (e) { /* cross-origin */ }
+    document.documentElement.hidden = true;
+    return;
+  }
+
   // ---------- Constants ----------
   const STORAGE_KEY = 'qada-lah:v1';
+  const MAX_BACKUP_CHARS = 2 * 1024 * 1024; // real backups are a few KB
   const DAY_MS = 86400000;
 
   const PRAYERS = [
-    { id: 'subuh',   name: 'Subuh',   ar: 'الصبح',  rakaat: 2, emoji: '🌅', color: 'var(--c-subuh)' },
-    { id: 'zohor',   name: 'Zohor',   ar: 'الظهر',  rakaat: 4, emoji: '☀️', color: 'var(--c-zohor)' },
-    { id: 'asar',    name: 'Asar',    ar: 'العصر',  rakaat: 4, emoji: '🌤️', color: 'var(--c-asar)' },
-    { id: 'maghrib', name: 'Maghrib', ar: 'المغرب', rakaat: 3, emoji: '🌇', color: 'var(--c-maghrib)' },
-    { id: 'isyak',   name: 'Isyak',   ar: 'العشاء', rakaat: 4, emoji: '🌙', color: 'var(--c-isyak)' },
+    { id: 'subuh',   name: 'Subuh',   ar: 'الصبح',  rakaat: 2, emoji: '🌅' },
+    { id: 'zohor',   name: 'Zohor',   ar: 'الظهر',  rakaat: 4, emoji: '☀️' },
+    { id: 'asar',    name: 'Asar',    ar: 'العصر',  rakaat: 4, emoji: '🌤️' },
+    { id: 'maghrib', name: 'Maghrib', ar: 'المغرب', rakaat: 3, emoji: '🌇' },
+    { id: 'isyak',   name: 'Isyak',   ar: 'العشاء', rakaat: 4, emoji: '🌙' },
   ];
   const IDS = PRAYERS.map((p) => p.id);
   const byId = Object.fromEntries(PRAYERS.map((p) => [p.id, p]));
@@ -244,27 +253,45 @@
     return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : min;
   };
   const isDateStr = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+  // Only accept real ISO timestamps (anything else from a backup file is dropped)
+  const isoOrNull = (s) => (typeof s === 'string' && s.length <= 30 && /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(s) && !isNaN(Date.parse(s)) ? s : null);
+  const MAX_PER_PRAYER = 100000; // ~270 years of one prayer: generous but bounded
+  const MAX_ACTIVITY_DAYS = 20000;
+
+  // Keep only the known fields of a calculation period, all type-checked
+  const cleanPeriod = (p) => (p && typeof p === 'object' ? {
+    start: isDateStr(p.start) ? p.start : '',
+    end: isDateStr(p.end) ? p.end : '',
+    days: int(p.days, 0, MAX_PER_PRAYER),
+    effDays: int(p.effDays, 0, MAX_PER_PRAYER),
+    exclude: int(p.exclude, 0, 20),
+    skip: Array.isArray(p.skip) ? p.skip.filter((id) => IDS.includes(id)) : [],
+    total: int(p.total, 0, MAX_PER_PRAYER * IDS.length),
+  } : null);
 
   // Turn any parsed object into a well-formed state (or null if unusable).
   function normalize(obj) {
     if (!obj || typeof obj !== 'object') return null;
     const s = freshState();
     if (obj.plan && obj.plan.totals) {
-      const totals = Object.fromEntries(IDS.map((id) => [id, int(obj.plan.totals[id])]));
+      const totals = Object.fromEntries(IDS.map((id) => [id, int(obj.plan.totals[id], 0, MAX_PER_PRAYER)]));
       s.plan = {
         totals,
-        periods: Array.isArray(obj.plan.periods) ? obj.plan.periods.slice(0, 100) : [],
-        created: obj.plan.created || null,
+        periods: Array.isArray(obj.plan.periods) ? obj.plan.periods.slice(0, 100).map(cleanPeriod).filter(Boolean) : [],
+        created: isoOrNull(obj.plan.created),
       };
       IDS.forEach((id) => { s.done[id] = int(obj.done && obj.done[id], 0, totals[id]); });
     }
     if (obj.activity && typeof obj.activity === 'object') {
-      Object.entries(obj.activity).forEach(([k, v]) => { if (isDateStr(k)) s.activity[k] = int(v); });
+      Object.keys(obj.activity).filter(isDateStr).sort().slice(-MAX_ACTIVITY_DAYS).forEach((k) => {
+        const n = int(obj.activity[k], 0, MAX_PER_PRAYER);
+        if (n) s.activity[k] = n;
+      });
     }
     if (obj.round) IDS.forEach((id) => { s.round[id] = !!obj.round[id]; });
-    if (Array.isArray(obj.badges)) s.badges = obj.badges.filter((b) => BADGES.some((x) => x.id === b));
-    s.lastBackup = typeof obj.lastBackup === 'string' ? obj.lastBackup : null;
-    s.updated = typeof obj.updated === 'string' ? obj.updated : null;
+    if (Array.isArray(obj.badges)) s.badges = [...new Set(obj.badges.filter((b) => BADGES.some((x) => x.id === b)))];
+    s.lastBackup = isoOrNull(obj.lastBackup);
+    s.updated = isoOrNull(obj.updated);
     if (obj.settings) {
       s.settings.lang = obj.settings.lang === 'en' ? 'en' : 'ms';
       s.settings.theme = ['light', 'dark'].includes(obj.settings.theme) ? obj.settings.theme : null;
@@ -459,10 +486,10 @@
     PRAYERS.forEach((p) => {
       const on = state.draft.skip.includes(p.id);
       const label = document.createElement('label');
-      label.className = `prayer-chip${on ? ' on' : ''}`;
+      label.className = `prayer-chip p-${p.id}${on ? ' on' : ''}`;
       label.innerHTML = `
         <input type="checkbox" value="${p.id}" ${on ? 'checked' : ''}>
-        <span class="dot" style="background: color-mix(in srgb, ${p.color} 18%, transparent)">${p.emoji}</span>
+        <span class="dot">${p.emoji}</span>
         <span><span class="pc-name">${p.name}</span><br><span class="pc-sub">${t('rakaatN', { n: p.rakaat })}</span></span>
         <span class="pc-status">${on ? t('chipDone') : t('chipNeed')}</span>`;
       label.querySelector('input').addEventListener('change', (e) => {
@@ -518,7 +545,7 @@
 
     $('#resBreakdown').innerHTML = PRAYERS.map((p) => {
       const skipped = r.counts[p.id] === 0 && r.skip.includes(p.id);
-      return `<div class="bd${skipped ? ' skipped' : ''}" style="--pc:${p.color}">
+      return `<div class="bd p-${p.id}${skipped ? ' skipped' : ''}">
         <div class="bd-name">${p.emoji} ${p.name}</div>
         <div class="bd-count">${skipped ? '—' : fmt(r.counts[p.id])}</div>
         <div class="bd-sub">${skipped ? t('bdSkipped') : t('bdSub', { n: fmt(r.counts[p.id] * p.rakaat) })}</div>
@@ -690,8 +717,7 @@
       const p = byId[id];
       const left = state.plan.totals[id] - state.done[id];
       const li = document.createElement('li');
-      li.className = 'check-item';
-      li.style.setProperty('--pc', p.color);
+      li.className = `check-item p-${p.id}`;
       li.innerHTML = `
         <input type="checkbox" id="ck-${id}" ${state.round[id] ? 'checked' : ''}>
         <label for="ck-${id}">
@@ -750,29 +776,29 @@
       const total = state.plan.totals[p.id];
       const done = state.done[p.id];
       const card = document.createElement('div');
-      card.style.setProperty('--pc', p.color);
       const head = `
         <div class="pcard-top">
-          <span class="dot" style="background: color-mix(in srgb, ${p.color} 18%, transparent)">${p.emoji}</span>
+          <span class="dot">${p.emoji}</span>
           <div><div class="pcard-name">${p.name}</div><div class="pcard-ar" lang="ar">${p.ar}</div></div>
           ${total ? `<span class="pcard-pct">${Math.floor((done / total) * 100)}%</span>` : ''}
         </div>`;
       if (!total) {
-        card.className = 'pcard skipped';
+        card.className = `pcard p-${p.id} skipped`;
         card.innerHTML = `${head}<p class="skip-note">${t('pcSkipped')}</p>`;
         wrap.appendChild(card);
         return;
       }
       const complete = done >= total;
-      card.className = `pcard${complete ? ' done' : ''}`;
+      card.className = `pcard p-${p.id}${complete ? ' done' : ''}`;
       card.innerHTML = `${head}
-        <div class="pbar"><div class="pbar-fill" style="width:${(done / total) * 100}%"></div></div>
+        <div class="pbar"><div class="pbar-fill"></div></div>
         <div class="pcard-count">${complete ? `<span class="done-ribbon">${t('pcDone')}</span> · ` : ''}${t('pcardCount', { d: fmt(done), t: fmt(total), left: fmt(total - done) })}</div>
         <div class="pcard-actions">
           <button type="button" data-act="minus" ${done <= 0 ? 'disabled' : ''} aria-label="-1 ${p.name}">−1</button>
           <button type="button" data-act="set">${t('setBtn')}</button>
           <button type="button" class="plus" data-act="plus" ${complete ? 'disabled' : ''} aria-label="+1 ${p.name}">+1</button>
         </div>`;
+      card.querySelector('.pbar-fill').style.width = `${(done / total) * 100}%`;
       card.querySelector('[data-act="minus"]').onclick = () => { addDone(p.id, -1); afterChange(); };
       card.querySelector('[data-act="plus"]').onclick = () => { if (addDone(p.id, 1)) toastMaybeDone(p.id); afterChange(); };
       card.querySelector('[data-act="set"]').onclick = async () => {
@@ -933,15 +959,15 @@
 
   function parseBackup(text) {
     text = String(text || '').trim();
-    if (!text) return null;
+    if (!text || text.length > MAX_BACKUP_CHARS) return null;
     let obj;
     try { obj = JSON.parse(text); } catch (e) {
       try { obj = JSON.parse(fromB64(text.replace(/\s+/g, ''))); } catch (_) { return null; }
     }
-    if (!obj || obj.app !== 'qada-lah' || !obj.data) return null;
+    if (!obj || typeof obj !== 'object' || obj.app !== 'qada-lah' || !obj.data) return null;
     const s = normalize(obj.data);
     if (!s || !s.plan) return null;
-    return { state: s, exportedAt: obj.exportedAt };
+    return { state: s, exportedAt: isoOrNull(obj.exportedAt) };
   }
 
   async function restoreFrom(text) {
@@ -1054,7 +1080,7 @@
       const file = e.target.files[0];
       e.target.value = '';
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { toast(t('invalidFile')); return; }
+      if (file.size > MAX_BACKUP_CHARS) { toast(t('invalidFile')); return; }
       restoreFrom(await file.text());
     });
     $('#restoreCode').addEventListener('click', async () => {

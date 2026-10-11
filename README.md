@@ -41,6 +41,19 @@ Enable **GitHub Pages** (Settings → Pages → deploy from branch, root folder)
 | `style.css` | Styling, themes, responsive layout |
 | `app.js` | Calculator, tracker, badges, backup/restore, translations |
 | `sw.js`, `manifest.webmanifest` | Offline support & installable app |
-| `assets/icon.svg` | App icon |
+| `assets/icon*.svg/png`, `apple-touch-icon.png` | App & home-screen icons |
+| `assets/og-image.jpg` | Link preview image (WhatsApp, Telegram, etc.) |
+| `assets/fonts/` | Self-hosted Plus Jakarta Sans & Amiri (SIL Open Font License) |
+
+## Privacy & security
+
+- **No server, no accounts, no database.** Everything is static files; each person's progress is saved only in their own browser. There is nothing central to break into or leak.
+- **No third-party requests.** Fonts are self-hosted and there are no analytics or trackers.
+- **Strict Content-Security-Policy**: the page may only run its own script, styles and fonts — injected scripts, plugins, `<base>` tricks and form posts are blocked.
+- **Backup files are untrusted input**: they are size-limited, every field is type-checked and clamped, unknown fields are dropped, and nothing from a backup is ever inserted as HTML.
+- **Clickjacking guard**: the app refuses to render inside another site's frame.
+- `Referrer-Policy: no-referrer`; HTTPS is enforced by GitHub Pages.
+
+The main thing to protect is **the GitHub account** that can change the site: keep two-factor authentication on, and consider protecting the deployed branch.
 
 > Kiraan ini adalah anggaran. Untuk hukum terperinci, sila rujuk ustaz atau pejabat agama Islam negeri anda.

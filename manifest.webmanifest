@@ -2,12 +2,19 @@
   "name": "Qada Lah",
   "short_name": "Qada Lah",
   "description": "Kira dan jejak solat qada anda.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
+  "lang": "ms",
   "background_color": "#f6f3ea",
   "theme_color": "#0f5c4a",
   "icons": [
-    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }
