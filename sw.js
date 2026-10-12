@@ -1,6 +1,8 @@
 // Network-first service worker so the app keeps working offline
-// while always picking up new versions when online.
-const CACHE = 'qada-lah-v4';
+// while always picking up new versions when online. On a slow connection
+// the cached copy is used after a few seconds so the app still opens fast.
+const CACHE = 'qada-lah-v5';
+const NETWORK_TIMEOUT_MS = 4000;
 const ASSETS = [
   './', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest',
   'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/apple-touch-icon.png',
@@ -24,15 +26,20 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   // Only handle our own files; anything else goes straight to the network untouched.
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
-  e.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (res.ok && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-        }
-        return res;
-      })
-      .catch(() => caches.match(req).then((r) => r || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
-  );
+  const network = fetch(req).then((res) => {
+    if (res.ok && res.type === 'basic') {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy));
+    }
+    return res;
+  });
+  e.waitUntil(network.catch(() => {})); // let the cache refresh finish in the background
+  e.respondWith((async () => {
+    const cached = await caches.match(req);
+    if (!cached) {
+      return network.catch(async () => (req.mode === 'navigate' && await caches.match('index.html')) || Response.error());
+    }
+    const timeout = new Promise((resolve) => setTimeout(() => resolve(cached), NETWORK_TIMEOUT_MS));
+    return Promise.race([network.catch(() => cached), timeout]);
+  })());
 });

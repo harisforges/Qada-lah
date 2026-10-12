@@ -154,6 +154,9 @@
       why4: 'Aplikasi pembersih (cleaner / booster) membuang data laman web',
       why5: 'Anda guna mod Incognito / Private',
       whyTip: '✅ Tip: Muat turun backup seminggu sekali dan simpan di Google Drive, atau hantar ke WhatsApp diri sendiri.',
+      overlapTitle: 'Tarikh ini sudah ada dalam pelan',
+      overlapText: 'Tempoh ini bertindih dengan tempoh dalam pelan anda ({ranges}). Jika ditambah, solat pada tarikh yang sama akan dikira dua kali.',
+      addAnyway: 'Tambah juga',
     },
     en: {
       tagline: 'Settle your missed prayers, one at a time.',
@@ -262,6 +265,9 @@
       why4: 'A cleaner / booster app wipes website data',
       why5: 'You use Incognito / Private mode',
       whyTip: '✅ Tip: Download a backup once a week and keep it in Google Drive, or send it to yourself on WhatsApp.',
+      overlapTitle: 'These dates are already in your plan',
+      overlapText: 'This period overlaps with a period already in your plan ({ranges}). If you add it, prayers on the same dates will be counted twice.',
+      addAnyway: 'Add anyway',
     },
   };
 
@@ -684,9 +690,15 @@
     await modal({ emoji: '💾', title: t('storeTitle'), text: t('storeText'), ok: t('gotIt'), cancel: false });
   }
 
-  function addToPlan() {
+  async function addToPlan() {
     const r = calculate();
     if (!r || r.error || !r.total || !state.plan) return;
+    const overlaps = state.plan.periods.filter((p) => p.start && p.end && r.start <= p.end && r.end >= p.start);
+    if (overlaps.length) {
+      const ranges = overlaps.map((p) => `${fmtDate(keyToLocal(p.start))} – ${fmtDate(keyToLocal(p.end))}`).join('; ');
+      const yes = await modal({ emoji: '⚠️', title: t('overlapTitle'), text: t('overlapText', { ranges }), ok: t('addAnyway') });
+      if (!yes) return;
+    }
     IDS.forEach((id) => { state.plan.totals[id] += r.counts[id]; });
     state.plan.periods.push(periodFrom(r));
     save();
@@ -826,12 +838,13 @@
     if (complete) {
       confetti(90);
       toast(t('roundDone'));
+      // Reset the round in saved state immediately (so closing the app now can't
+      // leave every box ticked), but keep the ticks on screen for a moment.
+      IDS.forEach((x) => { state.round[x] = false; });
+      save(false);
+      $$('#checklist input').forEach((el) => { el.disabled = true; });
       clearTimeout(roundTimer);
-      roundTimer = setTimeout(() => {
-        IDS.forEach((x) => { state.round[x] = false; });
-        save(false);
-        renderTracker();
-      }, 1400);
+      roundTimer = setTimeout(renderTracker, 1400);
     }
   }
 
@@ -882,7 +895,7 @@
           <button type="button" class="plus" data-act="plus" ${complete ? 'disabled' : ''} aria-label="+1 ${p.name}">+1</button>
         </div>`;
       card.querySelector('.pbar-fill').style.width = `${(done / total) * 100}%`;
-      card.querySelector('[data-act="minus"]').onclick = () => { addDone(p.id, -1); afterChange(); };
+      card.querySelector('[data-act="minus"]').onclick = () => { addDone(p.id, -1); clearTick(p.id); afterChange(); };
       card.querySelector('[data-act="plus"]').onclick = () => { if (addDone(p.id, 1)) toastMaybeDone(p.id); afterChange(); };
       card.querySelector('[data-act="set"]').onclick = async () => {
         const val = await modal({
@@ -891,10 +904,19 @@
         });
         if (val === null || val === '') return;
         addDone(p.id, int(val, 0, total) - state.done[p.id], false);
+        clearTick(p.id);
         afterChange();
       };
       wrap.appendChild(card);
     });
+  }
+
+  // A manual −1 / Set means the checklist tick no longer reflects reality;
+  // clear it so un-ticking later can't subtract a second time.
+  function clearTick(id) {
+    if (!state.round[id]) return;
+    state.round[id] = false;
+    save(false);
   }
 
   function toastMaybeDone(id) {
@@ -987,12 +1009,16 @@
     $('#backupStatusText').textContent = text;
   }
 
-  function exportPayload() {
-    const now = new Date().toISOString();
+  function exportPayload(now) {
+    // The backup records itself as "backed up now", so restoring it shows as up to date
+    return { app: 'qada-lah', v: 1, exportedAt: now, data: { ...state, lastBackup: now, updated: now } };
+  }
+
+  function markBackedUp(now) {
     state.lastBackup = now;
     state.updated = now; // the backup now reflects everything
     save(false);
-    return { app: 'qada-lah', v: 1, exportedAt: now, data: state };
+    afterBackup();
   }
 
   function toB64(str) {
@@ -1008,36 +1034,62 @@
     renderBackup();
   }
 
-  function downloadBackup() {
-    if (!state.plan) { toast(t('noPlanBackup')); return; }
-    const payload = exportPayload();
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  function saveFile(json, name) {
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `qada-lah-backup-${todayKey()}.json`;
+    a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    a.download = name;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  async function downloadBackup() {
+    if (!state.plan) { toast(t('noPlanBackup')); return; }
+    const now = new Date().toISOString();
+    const json = JSON.stringify(exportPayload(now), null, 2);
+    const name = `qada-lah-backup-${todayKey()}.json`;
+    // iPhone home-screen apps can't reliably download files; the share sheet
+    // (Save to Files, WhatsApp, Drive…) works everywhere on iOS.
+    if (platform.ios && navigator.canShare) {
+      const file = new File([json], name, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Qada Lah backup' });
+          toast(t('downloaded'));
+          markBackedUp(now);
+        } catch (e) {
+          if (e.name === 'AbortError') return; // user closed the share sheet: not backed up
+          saveFile(json, name);
+          toast(t('downloaded'));
+          markBackedUp(now);
+        }
+        return;
+      }
+    }
+    saveFile(json, name);
     toast(t('downloaded'));
-    afterBackup();
+    markBackedUp(now);
   }
 
   async function copyCode() {
     if (!state.plan) { toast(t('noPlanBackup')); return; }
-    const code = toB64(JSON.stringify(exportPayload()));
+    const now = new Date().toISOString();
+    const code = toB64(JSON.stringify(exportPayload(now)));
+    let copied = false;
     try {
       await navigator.clipboard.writeText(code);
-      toast(t('copied'));
+      copied = true;
     } catch (e) {
       // Fallback: drop the code into the paste box so the user can copy it manually
       const ta = $('#pasteCode');
       ta.closest('details').open = true;
       ta.value = code;
       ta.select();
-      try { document.execCommand('copy') ? toast(t('copied')) : toast(t('copyFail')); } catch (_) { toast(t('copyFail')); }
+      try { copied = document.execCommand('copy'); } catch (_) { copied = false; }
     }
-    afterBackup();
+    toast(t(copied ? 'copied' : 'copyFail'));
+    if (copied) markBackedUp(now);
   }
 
   function parseBackup(text) {
@@ -1146,6 +1198,28 @@
   });
 
   // =========================================================
+  // Sync between open copies (e.g. installed app + a browser tab)
+  // =========================================================
+  // Every change is saved immediately, so if storage differs from what this copy
+  // holds, another copy saved newer progress: adopt it instead of overwriting it.
+  function syncFromStorage() {
+    let raw;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+    if (!raw || raw === JSON.stringify(state)) return;
+    let s;
+    try { s = normalize(JSON.parse(raw)); } catch (e) { return; }
+    if (!s) return;
+    state = s;
+    applyLang();
+    applyTheme();
+    syncCalcInputs();
+    renderCustomChips();
+    renderResult();
+    renderTracker();
+    renderBackup();
+  }
+
+  // =========================================================
   // Wiring
   // =========================================================
   function syncCalcInputs() {
@@ -1187,6 +1261,7 @@
       save(false);
       renderResult();
     });
+    $('#excludePerMonth').addEventListener('change', (e) => { e.target.value = state.draft.exclude; });
     $('#untilToday').addEventListener('click', () => { $('#endDate').value = todayKey(); onDate(); });
     $$('[data-years]').forEach((b) => b.addEventListener('click', () => {
       const end = $('#endDate').value || todayKey();
@@ -1221,10 +1296,16 @@
     });
     $('#resetAll').addEventListener('click', resetAll);
 
-    // Re-render when returning to the tab (e.g. the date rolled over)
+    // Returning to the app: pick up changes made in another copy, and re-render
+    // in case the date rolled over.
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) { syncCalcInputs(); renderTracker(); }
+      if (document.hidden) return;
+      syncFromStorage();
+      syncCalcInputs();
+      renderTracker();
     });
+    window.addEventListener('storage', (e) => { if (e.key === STORAGE_KEY) syncFromStorage(); });
+    window.addEventListener('pageshow', (e) => { if (e.persisted) syncFromStorage(); });
   }
 
   function init() {
