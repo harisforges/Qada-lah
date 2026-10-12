@@ -16,6 +16,8 @@
   - Per-prayer progress cards with +1 / −1 and "Set" (for qada done before using the app).
   - Daily target with projected finish date, streak counter, 20-week activity heatmap and 14 achievement badges.
 - **Backup** – progress lives in the browser (localStorage). Download a `.json` backup file or copy a backup code, then restore it on any device. Reminders nudge you when you haven't backed up.
+- **Install button** with step-by-step "Add to Home Screen" help for Android (Chrome / Samsung), iPhone (Safari), desktop, and WhatsApp/Facebook in-app browsers.
+- **Backup reminders**: a one-time notice when a plan is created, a "Why back up?" explainer, and a nudge when progress has not been backed up for 3+ days — because as a web app, data lives only in the browser.
 - Bahasa Melayu / English toggle, light & dark mode, mobile-first layout, works offline (PWA).
 
 ## Running locally
