@@ -130,6 +130,29 @@
       b_week: '7 hari selesai', b_streak7: '7 hari berturut', b_p10: '10% selesai', b_p25: 'Suku jalan',
       b_month: '30 hari selesai', b_p50: 'Separuh jalan', b_thousand: '1,000 solat', b_p75: '75% selesai',
       b_p100: 'Lunas!', b_backup: 'Data selamat',
+      // install & web-app storage reminders
+      installShort: 'Pasang',
+      installTitle: 'Pasang Qada Lah di skrin utama',
+      installIntro: 'Buka Qada Lah terus dari skrin utama, macam aplikasi biasa.',
+      installNote: '💾 Ingat: Qada Lah ialah web app, bukan aplikasi dari Play Store / App Store. Data disimpan dalam pelayar telefon ini sahaja. Aplikasi yang dipasang mungkin tidak berkongsi data dengan pelayar — muat turun backup dahulu, kemudian pulihkan di dalam aplikasi selepas dipasang.',
+      stepsIos: ['Buka laman ini dalam Safari.', 'Tekan butang Kongsi (petak dengan anak panah ke atas) di bawah skrin.', 'Skrol ke bawah dan pilih "Add to Home Screen" (Tambah ke Skrin Utama).', 'Tekan "Add" (Tambah).'],
+      stepsAndroid: ['Buka laman ini dalam Chrome.', 'Tekan menu ⋮ di penjuru kanan atas.', 'Pilih "Add to Home screen" atau "Install app".', 'Tekan "Install" untuk sahkan.'],
+      stepsSamsung: ['Tekan menu ☰ di bawah sebelah kanan.', 'Pilih "Add page to" → "Home screen".', 'Tekan "Add".'],
+      stepsInApp: ['Anda sedang guna pelayar dalam WhatsApp / Facebook / Instagram yang tidak boleh memasang aplikasi.', 'Tekan menu ⋮ atau ••• dan pilih "Open in Chrome" / "Open in Safari" (Buka dalam pelayar).', 'Kemudian tekan butang Pasang sekali lagi.'],
+      stepsDesktop: ['Guna Chrome atau Edge.', 'Klik ikon pasang (⊕) di hujung kanan bar alamat.', 'Klik "Install".'],
+      installed: 'Qada Lah sudah dipasang ✓ Jangan lupa backup berkala!',
+      gotIt: 'Faham',
+      storeTitle: 'Penting: simpan backup anda',
+      storeText: 'Qada Lah ialah web app — tiada akaun dan tiada server. Kemajuan anda disimpan dalam pelayar telefon ini sahaja, dan boleh hilang jika data pelayar dipadam atau anda tukar telefon. Muat turun backup secara berkala di tab Simpan.',
+      webappNote: 'Qada Lah ialah web app — data hanya disimpan dalam peranti ini, bukan di server.',
+      whyTitle: 'Kenapa perlu backup?',
+      whyIntro: 'Qada Lah ialah web app, bukan aplikasi dari Play Store / App Store. Tiada akaun atau server — kemajuan anda hanya disimpan dalam pelayar peranti ini. Ia boleh hilang jika:',
+      why1: 'Anda padam sejarah atau data pelayar (clear browsing data / cache)',
+      why2: 'Anda buang Qada Lah dari skrin utama, atau tukar ke pelayar lain',
+      why3: 'Anda tukar, reset atau format telefon',
+      why4: 'Aplikasi pembersih (cleaner / booster) membuang data laman web',
+      why5: 'Anda guna mod Incognito / Private',
+      whyTip: '✅ Tip: Muat turun backup seminggu sekali dan simpan di Google Drive, atau hantar ke WhatsApp diri sendiri.',
     },
     en: {
       tagline: 'Settle your missed prayers, one at a time.',
@@ -216,6 +239,28 @@
       b_week: '7 days cleared', b_streak7: '7-day streak', b_p10: '10% done', b_p25: 'Quarter way',
       b_month: '30 days cleared', b_p50: 'Halfway', b_thousand: '1,000 prayers', b_p75: '75% done',
       b_p100: 'All settled!', b_backup: 'Data safe',
+      installShort: 'Install',
+      installTitle: 'Add Qada Lah to your home screen',
+      installIntro: 'Open Qada Lah straight from your home screen, just like an app.',
+      installNote: '💾 Remember: Qada Lah is a web app, not an app from the Play Store / App Store. Your data is stored in this phone\'s browser only. The installed app may not share data with the browser — download a backup first, then restore it inside the app after installing.',
+      stepsIos: ['Open this page in Safari.', 'Tap the Share button (square with an arrow pointing up) at the bottom of the screen.', 'Scroll down and tap "Add to Home Screen".', 'Tap "Add".'],
+      stepsAndroid: ['Open this page in Chrome.', 'Tap the ⋮ menu at the top right.', 'Tap "Add to Home screen" or "Install app".', 'Tap "Install" to confirm.'],
+      stepsSamsung: ['Tap the ☰ menu at the bottom right.', 'Tap "Add page to" → "Home screen".', 'Tap "Add".'],
+      stepsInApp: ['You are using the built-in browser of WhatsApp / Facebook / Instagram, which can\'t install apps.', 'Tap the ⋮ or ••• menu and choose "Open in Chrome" / "Open in Safari".', 'Then tap the Install button again.'],
+      stepsDesktop: ['Use Chrome or Edge.', 'Click the install icon (⊕) at the right end of the address bar.', 'Click "Install".'],
+      installed: 'Qada Lah installed ✓ Don\'t forget to back up regularly!',
+      gotIt: 'Got it',
+      storeTitle: 'Important: keep a backup',
+      storeText: 'Qada Lah is a web app — no account and no server. Your progress is stored in this phone\'s browser only, and can be lost if browser data is cleared or you change phones. Download a backup regularly from the Backup tab.',
+      webappNote: 'Qada Lah is a web app — data is stored on this device only, not on a server.',
+      whyTitle: 'Why do I need a backup?',
+      whyIntro: 'Qada Lah is a web app, not an app from the Play Store / App Store. There is no account or server — your progress is stored only in this device\'s browser. It can be lost if:',
+      why1: 'You clear your browser history or data (clear browsing data / cache)',
+      why2: 'You remove Qada Lah from your home screen, or switch to another browser',
+      why3: 'You change, reset or format your phone',
+      why4: 'A cleaner / booster app wipes website data',
+      why5: 'You use Incognito / Private mode',
+      whyTip: '✅ Tip: Download a backup once a week and keep it in Google Drive, or send it to yourself on WhatsApp.',
     },
   };
 
@@ -229,6 +274,7 @@
     badges: [],
     lastBackup: null,
     updated: null,
+    seenStorageInfo: false,
     settings: { lang: 'ms', theme: null, target: 5 },
     draft: { start: '', end: '', exclude: 0, skip: [] },
   });
@@ -292,6 +338,7 @@
     if (Array.isArray(obj.badges)) s.badges = [...new Set(obj.badges.filter((b) => BADGES.some((x) => x.id === b)))];
     s.lastBackup = isoOrNull(obj.lastBackup);
     s.updated = isoOrNull(obj.updated);
+    s.seenStorageInfo = !!obj.seenStorageInfo;
     if (obj.settings) {
       s.settings.lang = obj.settings.lang === 'en' ? 'en' : 'ms';
       s.settings.theme = ['light', 'dark'].includes(obj.settings.theme) ? obj.settings.theme : null;
@@ -313,6 +360,7 @@
   function t(key, vars) {
     const dict = I18N[state.settings.lang] || I18N.ms;
     let s = dict[key] ?? I18N.ms[key] ?? key;
+    if (Array.isArray(s)) return s;
     if (vars) s = s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
     return s;
   }
@@ -371,10 +419,15 @@
   }
 
   // Returns a promise resolving to true/false (or the input value when `input` is set)
-  function modal({ emoji = '', title, text, ok, cancel, danger = false, input = null }) {
+  function modal({ emoji = '', title, text, ok, cancel, danger = false, input = null, steps = null, note = '' }) {
     return new Promise((resolve) => {
       const m = $('#modal');
       $('#modalEmoji').textContent = emoji;
+      const stepsEl = $('#modalSteps');
+      stepsEl.replaceChildren(...(steps || []).map((txt) => Object.assign(document.createElement('li'), { textContent: txt })));
+      stepsEl.hidden = !steps;
+      $('#modalNote').textContent = note;
+      $('#modalNote').hidden = !note;
       $('#modalTitle').textContent = title;
       $('#modalText').textContent = text || '';
       const okBtn = $('#modalOk');
@@ -597,8 +650,23 @@
     state.round = Object.fromEntries(IDS.map((id) => [id, false]));
     state.badges = state.badges.filter((b) => b === 'backup');
     save();
+    requestPersistence();
     toast(t('planCreated'));
     showTab('track');
+    showStorageInfoOnce();
+  }
+
+  // Ask the browser not to auto-clear our data (helps on Android; harmless elsewhere)
+  function requestPersistence() {
+    try { navigator.storage?.persist?.().catch(() => {}); } catch (e) { /* unsupported */ }
+  }
+
+  // One-time explanation that progress lives only on this device
+  async function showStorageInfoOnce() {
+    if (state.seenStorageInfo) return;
+    state.seenStorageInfo = true;
+    save(false);
+    await modal({ emoji: '💾', title: t('storeTitle'), text: t('storeText'), ok: t('gotIt'), cancel: false });
   }
 
   function addToPlan() {
@@ -875,7 +943,7 @@
     let msg = '';
     if (s.done > 0) {
       if (!state.lastBackup) msg = t('nudgeNever');
-      else if (daysSince(state.lastBackup) >= 7 && state.updated > state.lastBackup) msg = t('nudgeOld', { n: daysSince(state.lastBackup) });
+      else if (daysSince(state.lastBackup) >= 3 && state.updated > state.lastBackup) msg = t('nudgeOld', { n: daysSince(state.lastBackup) });
     }
     n.hidden = !msg;
     $('#backupNudgeText').textContent = `🛡️ ${msg}`;
@@ -1014,6 +1082,55 @@
   }
 
   // =========================================================
+  // INSTALL (add to home screen)
+  // =========================================================
+  let installPrompt = null; // Chrome/Edge/Samsung give us this event when the app is installable
+  const ua = navigator.userAgent;
+  const platform = {
+    ios: /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
+    android: /android/i.test(ua),
+    samsung: /SamsungBrowser/i.test(ua),
+    inApp: /FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Line\/|Telegram|TikTok|musical_ly/i.test(ua),
+  };
+  const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+  function updateInstallBtn() {
+    $('#installBtn').hidden = isStandalone();
+  }
+
+  async function onInstallClick() {
+    if (installPrompt) {
+      const yes = await modal({
+        emoji: '📲', title: t('installTitle'), text: t('installIntro'), note: t('installNote'), ok: t('installShort'),
+      });
+      if (!yes || !installPrompt) return;
+      installPrompt.prompt();
+      try { await installPrompt.userChoice; } catch (e) { /* dismissed */ }
+      installPrompt = null;
+      return;
+    }
+    const steps = platform.inApp ? 'stepsInApp'
+      : platform.ios ? 'stepsIos'
+      : platform.samsung ? 'stepsSamsung'
+      : platform.android ? 'stepsAndroid' : 'stepsDesktop';
+    modal({
+      emoji: '📲', title: t('installTitle'), text: t('installIntro'), steps: t(steps), note: t('installNote'),
+      ok: t('gotIt'), cancel: false,
+    });
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); // we show our own button instead of the browser's mini banner
+    installPrompt = e;
+    updateInstallBtn();
+  });
+  window.addEventListener('appinstalled', () => {
+    installPrompt = null;
+    updateInstallBtn();
+    toast(t('installed'));
+  });
+
+  // =========================================================
   // Wiring
   // =========================================================
   function syncCalcInputs() {
@@ -1063,6 +1180,7 @@
       onDate();
     }));
 
+    $('#installBtn').addEventListener('click', onInstallClick);
     $('#startTracking').addEventListener('click', startTracking);
     $('#addToPlan').addEventListener('click', addToPlan);
 
@@ -1103,6 +1221,8 @@
     bind();
     showTab(state.plan ? 'track' : 'calc');
     checkBadges();
+    updateInstallBtn();
+    if (state.plan) requestPersistence();
 
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
