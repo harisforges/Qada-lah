@@ -1,6 +1,6 @@
 // Network-first service worker so the app keeps working offline
 // while always picking up new versions when online.
-const CACHE = 'qada-lah-v3';
+const CACHE = 'qada-lah-v4';
 const ASSETS = [
   './', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest',
   'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/apple-touch-icon.png',

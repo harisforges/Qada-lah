@@ -12,6 +12,7 @@
 
   // ---------- Constants ----------
   const STORAGE_KEY = 'qada-lah:v1';
+  const RECOVERY_KEY = 'qada-lah:v1:recovery';
   const MAX_BACKUP_CHARS = 2 * 1024 * 1024; // real backups are a few KB
   const DAY_MS = 86400000;
 
@@ -279,13 +280,22 @@
     draft: { start: '', end: '', exclude: 0, skip: [] },
   });
 
-  let state = load();
+  // Assigned by load() once all helpers below are defined (see after normalize()).
+  let state;
 
   function load() {
+    let raw = null;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return freshState(); } // storage blocked
+    if (!raw) return freshState();
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return normalize(JSON.parse(raw)) || freshState();
-    } catch (e) { /* storage blocked or corrupt */ }
+      const s = normalize(JSON.parse(raw));
+      if (s) return s;
+    } catch (e) {
+      console.error('Qada Lah: could not read saved progress', e);
+    }
+    // Never let a read failure silently wipe progress: keep the raw data aside
+    // so the next save can't destroy it, and it can still be recovered.
+    try { localStorage.setItem(RECOVERY_KEY, raw); } catch (e) { /* ignore */ }
     return freshState();
   }
 
@@ -352,6 +362,11 @@
     }
     return s;
   }
+
+  // Load saved progress only now that normalize() and its helpers exist.
+  // (Calling it earlier hit the helpers before initialisation, threw, and
+  // every reopen started from a blank state.)
+  state = load();
 
   // ---------- Helpers ----------
   const $ = (sel, root = document) => root.querySelector(sel);
