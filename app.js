@@ -358,7 +358,9 @@
     if (obj.settings) {
       s.settings.lang = obj.settings.lang === 'en' ? 'en' : 'ms';
       s.settings.theme = ['light', 'dark'].includes(obj.settings.theme) ? obj.settings.theme : null;
-      s.settings.target = int(obj.settings.target, 1, 50) || 5;
+      // Missing or non-numeric target → default 5 (int() alone would clamp it to 1)
+      const target = Number(obj.settings.target);
+      s.settings.target = Number.isFinite(target) ? int(target, 1, 50) : 5;
     }
     if (obj.draft) {
       s.draft.start = isDateStr(obj.draft.start) ? obj.draft.start : '';
